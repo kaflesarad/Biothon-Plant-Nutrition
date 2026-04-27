@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Smart AgroSense Nepal — real-time weather, soil indicators, and AI crop recommendation dashboard.">
+  <title>Mato</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'></text></svg>">
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+</head>
+<body>
+
+  <div class="page">
+
+    <!-- ========== TITLE CARD (Top-Left) ========== -->
+    <div class="title-card fade-in">
+      <div class="brand">
+        <div class="brand-icon">M</div>
+        <div class="brand-info">
+          <h1>Ma<span class="accent">to</span></h1>
+          <div class="tagline">Nepal Crop Intelligence</div>
+        </div>
+      </div>
+      <div class="chip-stack">
+        <div class="location-chip" id="location-chip">
+          <span class="pulse-dot"></span>
+          <span id="location-text">Detecting location…</span>
+        </div>
+        <div class="location-chip metric-chip" id="pitch-chip">
+          <span>Model accuracy: --</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== WEATHER STRIP (Above Map) ========== -->
+    <div class="weather-strip fade-in" style="animation-delay:0.1s">
+      <div class="loading-state" id="weather-loading">
+        <div class="spinner"></div>
+        Fetching weather data…
+      </div>
+      <div id="weather-content" style="display:none;">
+        <!-- Primary temp -->
+        <div class="ws-primary">
+          <div class="ws-temp">
+            <span class="ws-temp-val" id="temp-value">--</span>
+            <span class="ws-temp-unit">°C</span>
+          </div>
+          <div class="ws-temp-meta">
+            <div class="ws-desc" id="temp-desc">--</div>
+            <div class="ws-time" id="weather-time">--</div>
+          </div>
+        </div>
+        <!-- Detail tiles -->
+        <div class="ws-tiles">
+          <div class="ws-tile">
+            <div class="ws-tile-label">Humidity</div>
+            <div class="ws-tile-val humidity" id="humidity-value">--%</div>
+            <div class="ws-bar-bg"><div class="ws-bar-fill" id="humidity-bar" style="width:0%"></div></div>
+          </div>
+          <div class="ws-tile">
+            <div class="ws-tile-label">Feels Like</div>
+            <div class="ws-tile-val" id="feels-like">--°C</div>
+          </div>
+          <div class="ws-tile">
+            <div class="ws-tile-label">Wind</div>
+            <div class="ws-tile-val" id="wind-speed">-- km/h</div>
+          </div>
+          <div class="ws-tile">
+            <div class="ws-tile-label">Direction</div>
+            <div class="ws-tile-val" id="wind-dir">--</div>
+          </div>
+          <div class="ws-tile">
+            <div class="ws-tile-label">Clouds</div>
+            <div class="ws-tile-val" id="cloud-cover">--%</div>
+          </div>
+          <div class="ws-tile">
+            <div class="ws-tile-label">Rain</div>
+            <div class="ws-tile-val" id="precipitation">-- mm</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== MAP ROW: Map (left) + Side Panel (right) ========== -->
+    <div class="map-row">
+
+      <!-- Map (smaller) -->
+      <div class="glass-card map-card fade-in" style="animation-delay:0.15s">
+        <div class="card-header">
+          <div class="label">
+            <span class="bar"></span>
+            Nepal — Live Field Context
+          </div>
+          <div class="coords" id="map-coords">28.3949° N, 84.1240° E</div>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <!-- Right side panel -->
+      <div class="side-panel">
+
+        <!-- Your Location -->
+        <div class="glass-card side-card fade-in" style="animation-delay:0.2s">
+          <div class="side-header accent">Your Location</div>
+          <div class="side-row">
+            <span class="side-key">Latitude</span>
+            <span class="side-val" id="user-lat">--</span>
+          </div>
+          <div class="side-row">
+            <span class="side-key">Longitude</span>
+            <span class="side-val" id="user-lng">--</span>
+          </div>
+          <div class="side-row">
+            <span class="side-key">Altitude</span>
+            <span class="side-val" id="user-alt">--</span>
+          </div>
+          <div class="side-row">
+            <span class="side-key">Region</span>
+            <span class="side-val" id="user-region">Detecting…</span>
+          </div>
+          <div class="side-row">
+            <span class="side-key">Climate Zone</span>
+            <span class="side-val" id="user-climate">--</span>
+          </div>
+        </div>
+
+        <!-- Soil Indicators -->
+        <div class="glass-card side-card fade-in" style="animation-delay:0.25s">
+          <div class="side-header gold">Soil Indicators</div>
+          <div class="side-row">
+            <span class="side-key">Soil Moisture</span>
+            <span class="side-val good" id="soil-moisture">--</span>
+          </div>
+          <div class="side-row">
+            <span class="side-key">Evapotranspiration</span>
+            <span class="side-val warn" id="soil-et">--</span>
+          </div>
+          <div class="side-row">
+            <span class="side-key">UV Index</span>
+            <span class="side-val" id="soil-uv">--</span>
+          </div>
+          <div class="side-row">
+            <span class="side-key">Daylight</span>
+            <span class="side-val good" id="soil-daylight">--</span>
+          </div>
+        </div>
+
+        <!-- Seasonal Crops Widget -->
+        <div class="glass-card side-card fade-in" style="animation-delay:0.27s">
+          <div class="side-header green">In-season Crops</div>
+          <div class="side-row">
+            <div id="seasonal-crops">Loading...</div>
+          </div>
+        </div>
+
+        <!-- AI Advisor -->
+        <div class="glass-card side-card fade-in" style="animation-delay:0.30s">
+          <div class="side-header accent">AI Crop Advisor</div>
+
+          <div class="advisor-grid">
+            <label>
+              Region
+              <select id="input-region">
+                <option value="Terai">Terai</option>
+                <option value="Hill" selected>Hill</option>
+                <option value="Mountain">Mountain</option>
+              </select>
+            </label>
+            <label>
+              Month
+              <input id="input-month" type="number" min="1" max="12" value="6">
+            </label>
+            <label>
+              Soil pH
+              <input id="input-ph" type="number" step="0.1" min="4.5" max="8.5" value="6.2">
+            </label>
+            <label>
+              Moisture (%)
+              <input id="input-moisture" type="number" step="0.1" min="10" max="90" value="50">
+            </label>
+            <label>
+              Temperature (°C)
+              <input id="input-temp" type="number" step="0.1" min="8" max="40" value="24">
+            </label>
+            <label>
+              Humidity (%)
+              <input id="input-humidity" type="number" step="0.1" min="25" max="95" value="65">
+            </label>
+          </div>
+
+          <div class="advisor-actions">
+            <button id="use-live-btn" class="btn btn-secondary" type="button">Use Live Weather</button>
+            <button id="run-ai-btn" class="btn btn-primary" type="button">Get AI Recommendation</button>
+          </div>
+
+          <div id="ai-status" class="advisor-status">Waiting for input...</div>
+
+          <div id="ai-result" class="ai-result" style="display:none;">
+            <div class="ai-result-row">
+              <span class="k">Best Crop</span>
+              <span class="v" id="result-crop">--</span>
+            </div>
+            <div class="ai-result-row">
+              <span class="k">Confidence</span>
+              <span class="v" id="result-confidence">--</span>
+            </div>
+            <div class="ai-result-row">
+              <span class="k">N dose (kg/ha)</span>
+              <span class="v" id="result-n">--</span>
+            </div>
+            <div class="ai-result-row">
+              <span class="k">P dose (kg/ha)</span>
+              <span class="v" id="result-p">--</span>
+            </div>
+            <div class="ai-result-row">
+              <span class="k">K dose (kg/ha)</span>
+              <span class="v" id="result-k">--</span>
+            </div>
+            <div class="ai-top3" id="result-top3">Top 3 crops: --</div>
+            <div class="ai-advice" id="result-advice">--</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /map-row -->
+
+  </div><!-- /page -->
+  <script src="/static/app.js"></script>
+  
+
+</body>
+</html>

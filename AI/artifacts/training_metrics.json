@@ -1,0 +1,28 @@
+{
+  "input_csv": "C:\\Users\\rasul\\OneDrive\\Documents\\Hackathon\\test\\data\\nepal_training_from_matlab.csv",
+  "created_utc": "2026-04-26T19:38:58.640921+00:00",
+  "samples_total": 12000,
+  "samples_train": 9600,
+  "samples_test": 2400,
+  "crop_accuracy": 0.9283333333333333,
+  "nutrient_metrics": {
+    "N_apply_kg_ha": {
+      "mae_pipeline": 4.5455544680796045,
+      "rmse_pipeline": 5.927373619776654,
+      "mae_true_crop": 4.269131854881857,
+      "rmse_true_crop": 5.384006027205938
+    },
+    "P_apply_kg_ha": {
+      "mae_pipeline": 2.8275096493363425,
+      "rmse_pipeline": 3.754413878103174,
+      "mae_true_crop": 2.669935676523011,
+      "rmse_true_crop": 3.400672321813053
+    },
+    "K_apply_kg_ha": {
+      "mae_pipeline": 2.7970013665891234,
+      "rmse_pipeline": 3.838257073696513,
+      "mae_true_crop": 2.603019214275168,
+      "rmse_true_crop": 3.2701152355322525
+    }
+  }
+}
