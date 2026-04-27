@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Local/generated runtime output
+outputs/
+AI/artifacts/*.joblib
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.log
